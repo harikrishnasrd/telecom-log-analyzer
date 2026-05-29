@@ -1,0 +1,35 @@
+####Path:::: C:\Users\sre78973\Desktop\console.log
+search_word = "O-RAN"
+total_lines = 0
+matched_lines = 0
+
+with open(r"C:\Users\sre78973\Desktop\console.log","r") as file:
+    for line in file:
+        if search_word.lower() in line.lower():
+            matched_lines += 1
+            print(line.strip())
+            total_lines +=1
+
+
+print(f"total matched words for {search_word} : {matched_lines}")
+print(f"total lines {search_word} : {total_lines}")
+
+Line by line:
+search_word = "error" — the keyword you're hunting for. Change this to anything that appears in your log
+total_lines = 0 — counter for every line in the file
+matched_lines = 0 — counter only for lines that contain your keyword
+with open(...) as file: — open the file, same as before
+for line in file: — go through every line one at a time
+total_lines += 1 — count every line regardless of content
+if search_word.lower() in line.lower(): — this is the key line. Breaking it down further:
+
+line.lower() — converts the entire line to lowercase temporarily, so ERROR and Error and error all become error
+search_word.lower() — converts your search word to lowercase too
+in — checks if your search word exists anywhere inside that line
+So this line says: "if my keyword appears anywhere in this line (regardless of uppercase or lowercase)..."
+
+matched_lines += 1 — if the keyword was found, add 1 to the match counter
+print(line.strip()) — print that matching line so you can see it
+print(f"\n=== SUMMARY ===") — the \n adds a blank line before SUMMARY for clean spacing
+print(f"Total lines   : {total_lines}") — show total lines scanned
+print(f"Matched lines : {matched_lines}") — show how many had your keyword
