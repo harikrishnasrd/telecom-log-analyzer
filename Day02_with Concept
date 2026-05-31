@@ -1,0 +1,107 @@
+🔷 Concept 1 — split() (8 min)
+split() chops a string into a list of pieces wherever it sees a space:
+pythonline = "RRC_Setup RSRP=-85.0 STATUS=FAIL"
+
+pieces = line.split()
+
+print(pieces)
+# Output: ['RRC_Setup', 'RSRP=-85.0', 'STATUS=FAIL']
+Think of it like cutting a sentence into words. Each word becomes an item in a list.
+Now you can grab specific pieces by their index (position number, starting from 0):
+pythonprint(pieces[0])   # RRC_Setup
+print(pieces[1])   # RSRP=-85.0
+print(pieces[2])   # STATUS=FAIL
+
+🔷 Concept 2 — split() with a separator (5 min)
+What if you want just the number from RSRP=-85.0? Split again — but this time split on the = sign:
+pythonchunk = "RSRP=-85.0"
+
+parts = chunk.split("=")
+
+print(parts)
+# Output: ['RSRP', '-85.0']
+
+print(parts[1])
+# Output: -85.0
+You're splitting on a specific character instead of a space. Same idea, different separator.
+But notice parts[1] is still text — it's the string "-85.0", not the number -85.0. To do math on it, convert it:
+pythonvalue = float(parts[1])
+# Now it's a real number: -85.0
+float() converts text to a decimal number. int() converts text to a whole number. You'll use float() constantly for RSRP, throughput, SNR values.
+
+🔷 Concept 3 — Chaining it together (5 min)
+You can chain two splits in one line — split on space to get the chunk, then split on = to get the value:
+pythonline = "RRC_Setup RSRP=-85.0 STATUS=FAIL"
+
+rsrp_value = float(line.split()[1].split("=")[1])
+
+print(rsrp_value)
+# Output: -85.0
+Reading it left to right:
+
+line.split() — chop by spaces → ['RRC_Setup', 'RSRP=-85.0', 'STATUS=FAIL']
+[1] — grab index 1 → 'RSRP=-85.0'
+.split("=") — chop by = → ['RSRP', '-85.0']
+[1] — grab index 1 → '-85.0'
+float(...) — convert to number → -85.0
+
+
+🔷 Your hands-on task (10 min)
+Paste and run this on online-python.com — every line explained in the comments:
+python# Simulated TM500-style log lines
+log_lines = [
+    "RRC_Setup RSRP=-85.0 STATUS=PASS",
+    "Handover RSRP=-103.5 STATUS=FAIL",
+    "NAS_Attach RSRP=-78.2 STATUS=PASS",
+    "PDCP_Reorder RSRP=-91.0 STATUS=FAIL",
+    "RRC_Reconfig RSRP=-88.5 STATUS=PASS"
+]
+
+# Store extracted values here
+rsrp_values = []
+
+for line in log_lines:
+    # Step 1 — split line by spaces into pieces
+    pieces = line.split()
+
+    # Step 2 — grab the test name (index 0)
+    test_name = pieces[0]
+
+    # Step 3 — grab RSRP chunk (index 1), split by = , grab value, convert to float
+    rsrp = float(pieces[1].split("=")[1])
+
+    # Step 4 — grab STATUS chunk (index 2), split by =, grab value
+    status = pieces[2].split("=")[1]
+
+    # Step 5 — add rsrp to our list for later
+    rsrp_values.append(rsrp)
+
+    # Step 6 — print extracted values cleanly
+    print(f"{test_name}: RSRP={rsrp} dBm -- {status}")
+
+# After loop — calculate stats from extracted values
+print(f"\n=== RSRP STATS ===")
+print(f"Best RSRP  : {max(rsrp_values)} dBm")
+print(f"Worst RSRP : {min(rsrp_values)} dBm")
+print(f"Average    : {sum(rsrp_values) / len(rsrp_values):.1f} dBm")
+
+Expected output:
+RRC_Setup: RSRP=-85.0 dBm -- PASS
+Handover: RSRP=-103.5 dBm -- FAIL
+NAS_Attach: RSRP=-78.2 dBm -- PASS
+PDCP_Reorder: RSRP=-91.0 dBm -- FAIL
+RRC_Reconfig: RSRP=-88.5 dBm -- PASS
+
+=== RSRP STATS ===
+Best RSRP  : -78.2 dBm
+Worst RSRP : -103.5 dBm
+Average    : -89.2 dBm
+
+🔷 Two new things to notice:
+rsrp_values.append(rsrp) — .append() adds an item to the end of a list. You're collecting all RSRP numbers as you loop so you can do stats after.
+max(), min(), sum(), len() — Python built-in functions:
+
+max() — biggest number in the list
+min() — smallest number in the list
+sum() — adds all numbers together
+len() — counts how many items in the list
