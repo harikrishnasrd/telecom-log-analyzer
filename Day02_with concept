@@ -1,0 +1,39 @@
+#🔷 Step 1 — Just read it first (5 min)
+#Create read_log.py on your Desktop with this:
+#python
+with open(r"C:\Users\sre78973\Desktop\console.log", "r") as file:
+    for line in file:
+        print(line.strip())
+#Run it:
+#cd Desktop
+#python read_log.py
+#This just prints everything. Get this working first before moving forward.
+
+#🔷 Step 2 — Count total lines (5 min)
+#Once Step 1 works, modify your script:
+#pythontotal_lines = 0
+
+with open(r"C:\Users\sre78973\Desktop\console.log", "r") as file:
+    for line in file:
+        total_lines += 1
+
+print(f"Total lines in log: {total_lines}")
+This tells you how big your log is. Useful before you start hunting inside it.
+
+🔷 Step 3 — Hunt for keywords (10 min)
+This is the real power. Replace your script with this:
+pythonsearch_word = "error"   # change this to anything in your log
+
+total_lines = 0
+matched_lines = 0
+
+with open(r"C:\Users\sre78973\Desktop\console.log", "r") as file:
+    for line in file:
+        total_lines += 1
+        if search_word.lower() in line.lower():
+            matched_lines += 1
+            print(line.strip())
+
+print(f"\n=== SUMMARY ===")
+print(f"Total lines   : {total_lines}")
+print(f"Matched lines : {matched_lines}")
