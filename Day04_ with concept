@@ -1,0 +1,67 @@
+with open("report.txt", "w") as f:     # "w" means write mode — creates the file if it doesn't exist, overwrites if it does
+    f.write("Test Report\n")            # .write() puts text into the file — \n moves to next line, just like pressing Enter
+    f.write("PASS: RRC_Setup\n")        # every .write() call adds more text to the file
+
+
+
+
+
+
+with open("report.txt", "w") as f:     # "w" = write mode — WIPES the file clean every time you run the script
+    f.write("First run\n")
+
+with open("report.txt", "a") as f:     # "a" = append mode — ADDS to the file without deleting what's already there
+    f.write("Second run\n")
+
+
+
+
+test_name = "RRC_Setup"                         # just a regular variable
+rsrp = -85.0                                    # just a regular variable
+
+with open("report.txt", "w") as f:
+    f.write(f"{test_name}: {rsrp} dBm\n")       # f-string works inside .write() exactly like it does inside print()
+
+
+
+
+
+
+
+log_lines = [
+    "RRC_Setup RSRP=-85.0 STATUS=PASS",
+    "Handover RSRP=-103.5 STATUS=FAIL",
+    "NAS_Attach RSRP=-78.2 STATUS=PASS",
+    "PDCP_Reorder RSRP=-91.0 STATUS=FAIL",
+    "RRC_Reconfig RSRP=-88.5 STATUS=PASS"
+]                                                        # same 5 fake log lines from Day 3
+
+rsrp_values = []                                         # empty list to collect rsrp numbers as we loop
+fail_count = 0                                           # counter starting at 0 — will increase every time we hit a FAIL
+
+with open("test_report.txt", "w") as report:             # open a new file called test_report.txt in write mode — this is where we save results
+    report.write("=== TEST REPORT ===\n")                # write the header line into the file
+    report.write("-------------------\n")                # write a separator line for clean formatting
+
+    for line in log_lines:                               # loop through each log line one at a time
+        pieces = line.split()                            # chop line by spaces → ['RRC_Setup', 'RSRP=-85.0', 'STATUS=PASS']
+        test_name = pieces[0]                            # index 0 = test name
+        rsrp = float(pieces[1].split("=")[1])            # extract number from 'RSRP=-85.0' → -85.0
+        status = pieces[2].split("=")[1]                 # extract text from 'STATUS=PASS' → 'PASS'
+
+        rsrp_values.append(rsrp)                         # add rsrp number to list for stats later
+
+        if status == "FAIL":                             # check if this test failed
+            fail_count += 1                              # if yes, add 1 to fail counter
+
+        report.write(f"{test_name}: {rsrp} dBm -- {status}\n")   # write this line's result into the file
+
+    report.write("\n=== SUMMARY ===\n")                           # blank line then summary header
+    report.write(f"Total Tests : {len(rsrp_values)}\n")           # len() counts how many items are in rsrp_values list
+    report.write(f"Failures    : {fail_count}\n")                 # total fails we counted during the loop
+    report.write(f"Pass Rate   : {((len(rsrp_values) - fail_count) / len(rsrp_values)) * 100:.1f}%\n")   # (passes / total) x 100 = pass rate percentage
+    report.write(f"Best RSRP   : {max(rsrp_values)} dBm\n")       # max() = least negative = strongest signal
+    report.write(f"Worst RSRP  : {min(rsrp_values)} dBm\n")       # min() = most negative = weakest signal
+    report.write(f"Average     : {sum(rsrp_values) / len(rsrp_values):.1f} dBm\n")   # sum all values divided by count = average
+
+print("Report saved as test_report.txt")                 # confirm to screen that file was created — the actual results are in the file
