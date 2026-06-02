@@ -1,0 +1,128 @@
+Concept 1 — What is a function
+pythondef check_signal(rsrp):              # def = define a function, check_signal = name you give it, rsrp = input it expects
+    if rsrp >= -90:                  # logic lives INSIDE the function, indented
+        return "PASS"                # return sends a value BACK to whoever called the function
+    else:
+        return "FAIL"
+
+result = check_signal(-85.0)         # calling the function — send -85.0 in, get "PASS" back
+print(result)                        # prints: PASS
+
+🔷 Concept 2 — Function with multiple inputs
+pythondef check_signal(rsrp, threshold):   # two inputs — rsrp value AND the threshold to check against
+    if rsrp >= threshold:            # uses both inputs in the logic
+        return "PASS"
+    else:
+        return "FAIL"
+
+print(check_signal(-85.0, -90))      # send both values when calling — prints: PASS
+print(check_signal(-95.0, -90))      # different values — prints: FAIL
+
+🔷 Concept 3 — Default values for inputs
+pythondef check_signal(rsrp, threshold=-90):   # threshold=-90 means: use -90 if caller doesn't provide one
+    if rsrp >= threshold:
+        return "PASS"
+    else:
+        return "FAIL"
+
+print(check_signal(-85.0))               # no threshold given — uses default -90 → PASS
+print(check_signal(-85.0, -80))          # threshold given — uses -80 instead → FAIL
+
+🔷 Concept 4 — Function that returns multiple values
+pythondef analyze_rsrp(values):                            # takes a list of rsrp numbers as input
+    best = max(values)                               # max = strongest signal
+    worst = min(values)                              # min = weakest signal
+    average = sum(values) / len(values)              # sum divided by count = average
+    return best, worst, average                      # return THREE values at once
+
+b, w, avg = analyze_rsrp([-85.0, -103.5, -78.2])    # unpack 3 returned values into 3 variables
+print(f"Best: {b}, Worst: {w}, Avg: {avg:.1f}")      # :.1f = 1 decimal place
+
+🔷 Full Day 5 Script
+python# -----------------------------------------------
+# FUNCTION DEFINITIONS — write once, use anywhere
+# -----------------------------------------------
+
+def extract_fields(line):                            # takes one log line as input
+    pieces = line.split()                            # chop by spaces → ['RRC_Setup', 'RSRP=-85.0', 'STATUS=PASS']
+    test_name = pieces[0]                            # index 0 = test name
+    rsrp = float(pieces[1].split("=")[1])            # extract rsrp number from 'RSRP=-85.0'
+    status = pieces[2].split("=")[1]                 # extract status text from 'STATUS=PASS'
+    return test_name, rsrp, status                   # return all 3 values at once
+
+def check_threshold(rsrp, threshold=-90):            # check rsrp against threshold, default -90
+    return "PASS" if rsrp >= threshold else "FAIL"   # ternary — one line if/else
+
+def print_summary(rsrp_values, fail_count):          # takes list of values and fail count
+    total = len(rsrp_values)                         # count total tests
+    pass_rate = ((total - fail_count) / total) * 100 # calculate pass percentage
+    print(f"\n=== SUMMARY ===")
+    print(f"Total Tests : {total}")
+    print(f"Failures    : {fail_count}")
+    print(f"Pass Rate   : {pass_rate:.1f}%")         # :.1f = 1 decimal place
+    print(f"Best RSRP   : {max(rsrp_values)} dBm")   # max = strongest
+    print(f"Worst RSRP  : {min(rsrp_values)} dBm")   # min = weakest
+    print(f"Average     : {sum(rsrp_values) / len(rsrp_values):.1f} dBm")
+
+# -----------------------------------------------
+# MAIN SCRIPT — now super clean, calls functions
+# -----------------------------------------------
+
+log_lines = [
+    "RRC_Setup RSRP=-85.0 STATUS=PASS",
+    "Handover RSRP=-103.5 STATUS=FAIL",
+    "NAS_Attach RSRP=-78.2 STATUS=PASS",
+    "PDCP_Reorder RSRP=-91.0 STATUS=FAIL",
+    "RRC_Reconfig RSRP=-88.5 STATUS=PASS"
+]                                                    # same 5 log lines
+
+rsrp_values = []                                     # empty list to collect numbers
+fail_count = 0                                       # failure counter
+
+for line in log_lines:                               # one line at a time
+    name, rsrp, status = extract_fields(line)        # call function — get 3 values back
+    verdict = check_threshold(rsrp)                  # call function — get PASS or FAIL back
+    rsrp_values.append(rsrp)                         # collect rsrp
+    if verdict == "FAIL":                            # check verdict from function
+        fail_count += 1                              # count failures
+    print(f"{name}: {rsrp} dBm -- {verdict}")        # print result
+
+print_summary(rsrp_values, fail_count)               # call summary function once after loop
+
+Expected output:
+RRC_Setup: -85.0 dBm -- PASS
+Handover: -103.5 dBm -- FAIL
+NAS_Attach: -78.2 dBm -- PASS
+PDCP_Reorder: -91.0 dBm -- FAIL
+RRC_Reconfig: -88.5 dBm -- PASS
+
+=== SUMMARY ===
+Total Tests : 5
+Failures    : 2
+Pass Rate   : 60.0%
+Best RSRP   : -78.2 dBm
+Worst RSRP  : -103.5 dBm
+Average     : -89.2 dBm
+
+🔷 Notice what just happened to your main script
+Compare Day 4 vs Day 5 main loop:
+python# Day 4 — all logic crammed into the loop
+for line in log_lines:
+    pieces = line.split()
+    test_name = pieces[0]
+    rsrp = float(pieces[1].split("=")[1])
+    status = pieces[2].split("=")[1]
+    rsrp_values.append(rsrp)
+    if status == "FAIL":
+        fail_count += 1
+    report.write(f"{test_name}: {rsrp} dBm -- {status}\n")
+
+# Day 5 — clean, readable, each job has a name
+for line in log_lines:
+    name, rsrp, status = extract_fields(line)
+    verdict = check_threshold(rsrp)
+    rsrp_values.append(rsrp)
+    if verdict == "FAIL":
+        fail_count += 1
+    print(f"{name}: {rsrp} dBm -- {verdict}")
+Same result. Day 5 version is cleaner, easier to debug, and each function can be reused in any future script.
