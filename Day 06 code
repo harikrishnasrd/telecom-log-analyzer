@@ -1,0 +1,45 @@
+# Build a test result database using nested dictionaries
+
+results = {}                                    # start with empty dictionary
+
+# Simulate adding test results one by one
+raw_logs = [
+    "RRC_Setup RSRP=-85.0 STATUS=PASS DURATION=45",
+    "Handover RSRP=-103.5 STATUS=FAIL DURATION=120",
+    "NAS_Attach RSRP=-78.2 STATUS=PASS DURATION=33",
+    "PDCP_Reorder RSRP=-91.0 STATUS=FAIL DURATION=88",
+    "RRC_Reconfig RSRP=-88.5 STATUS=PASS DURATION=52"
+]
+
+for line in raw_logs:                           # process each log line
+    pieces = line.split()                       # chop by spaces
+    name = pieces[0]                            # test name
+    rsrp = float(pieces[1].split("=")[1])       # extract rsrp number
+    status = pieces[2].split("=")[1]            # extract status text
+    duration = int(pieces[3].split("=")[1])     # extract duration as integer
+
+    results[name] = {                           # store all fields in nested dict
+        "rsrp": rsrp,                           # inner key: rsrp
+        "status": status,                       # inner key: status
+        "duration_ms": duration                 # inner key: duration
+    }
+
+# Print full results table
+print("=== TEST RESULTS DATABASE ===")
+print(f"{'Test':<20} {'RSRP':>8} {'Status':<8} {'Duration':>10}")   # column headers
+print("-" * 50)                                 # separator line — "-" × 50
+
+for test_name, data in results.items():         # loop through all entries
+    print(f"{test_name:<20} {data['rsrp']:>8} {data['status']:<8} {data['duration_ms']:>8}ms")
+
+# Look up a specific test safely
+target = "Handover"
+entry = results.get(target, None)               # safe lookup — no crash if missing
+if entry:                                       # if entry exists
+    print(f"\n{target} detail: RSRP={entry['rsrp']} | {entry['status']} | {entry['duration_ms']}ms")
+
+# Find all failed tests
+print("\n=== FAILED TESTS ===")
+for test_name, data in results.items():         # loop through all
+    if data["status"] == "FAIL":                # check status in inner dict
+        print(f"{test_name}: {data['rsrp']} dBm -- took {data['duration_ms']}ms")
