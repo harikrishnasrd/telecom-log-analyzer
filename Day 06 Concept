@@ -1,0 +1,57 @@
+Concept 1 — Dictionary basics recap + adding/updatingpythontest_results = {}                               # empty dictionary — like an empty table
+
+test_results["RRC_Setup"] = -85.0               # adding a new key-value pair
+test_results["Handover"] = -103.5               # adding another
+
+print(test_results)
+# Output: {'RRC_Setup': -85.0, 'Handover': -103.5}
+
+test_results["RRC_Setup"] = -90.0               # updating existing key — overwrites -85.0
+print(test_results["RRC_Setup"])                # prints: -90.0
+
+
+🔷 Concept 2 — Checking if a key existspythontest_results = {"RRC_Setup": -85.0, "Handover": -103.5}
+
+if "RRC_Setup" in test_results:                 # 'in' checks if key exists — True/False
+    print("RRC_Setup found")
+
+if "NAS_Attach" not in test_results:            # 'not in' checks absence of key
+    print("NAS_Attach not in results yet")
+
+
+🔷 Concept 3 — .get() — safe key lookuppythontest_results = {"RRC_Setup": -85.0}
+
+value = test_results["NAS_Attach"]              # ❌ crashes if key doesn't exist — KeyError
+
+value = test_results.get("NAS_Attach")          # ✅ returns None if key missing — no crash
+print(value)                                    # prints: None
+
+value = test_results.get("NAS_Attach", "N/A")   # ✅ returns "N/A" if missing — you set default
+print(value)                                    # prints: N/A
+
+🔷 Concept 4 — Nested dictionariespython# Dictionary inside a dictionary — each test has multiple fields
+results = {
+    "RRC_Setup": {                              # key = test name, value = another dictionary
+        "rsrp": -85.0,                         # nested key: rsrp value
+        "status": "PASS",                      # nested key: status
+        "duration_ms": 45                      # nested key: how long test took
+    },
+    "Handover": {
+        "rsrp": -103.5,
+        "status": "FAIL",
+        "duration_ms": 120
+    }
+}
+
+print(results["RRC_Setup"]["rsrp"])             # access nested value — first key then second key
+# Output: -85.0
+
+print(results["Handover"]["status"])            # prints: FAIL
+
+🔷Concept 5 — Looping through nested dictionariespythonfor test_name, data in results.items():         # data = the inner dictionary for each test
+    rsrp = data["rsrp"]                         # get rsrp from inner dict
+    status = data["status"]                     # get status from inner dict
+    duration = data["duration_ms"]              # get duration from inner dict
+    print(f"{test_name}: {rsrp} dBm | {status} | {duration}ms")🔷 Full Day 6 Scriptpython# Build a test result database using nested dictionaries
+
+results = {}                                    # start with empty dictionary
