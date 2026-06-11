@@ -1,0 +1,154 @@
+🔷 Full Project Script — every line explained
+python# ================================================================
+# TM500-Style Log Parser — Day 7 Mini Project
+# Reads a log file, extracts KPIs, stores results,
+# generates a test report
+# Part of Apple Modem System Test Engineer prep
+# ================================================================
+
+# --- STEP 1: CREATE A SAMPLE LOG FILE TO WORK WITH ---
+
+log_data = """[08:01:23] RRC_Setup RSRP=-85.0 SINR=12.5 STATUS=PASS DURATION=45
+[08:02:11] Handover RSRP=-103.5 SINR=4.2 STATUS=FAIL DURATION=120
+[08:03:05] NAS_Attach RSRP=-78.2 SINR=18.1 STATUS=PASS DURATION=33
+[08:04:44] PDCP_Reorder RSRP=-91.0 SINR=8.7 STATUS=FAIL DURATION=88
+[08:05:30] RRC_Reconfig RSRP=-88.5 SINR=11.3 STATUS=PASS DURATION=52
+[08:06:15] Handover RSRP=-95.0 SINR=6.8 STATUS=FAIL DURATION=110
+[08:07:02] NAS_Detach RSRP=-82.0 SINR=14.2 STATUS=PASS DURATION=29
+"""                                             # triple quotes = multi-line string
+
+with open("tm500_session.log", "w") as f:       # create the log file in write mode
+    f.write(log_data)                           # write the fake log data into it
+
+print("Log file created: tm500_session.log")
+
+
+# --- STEP 2: DEFINE FUNCTIONS ---
+
+def parse_line(line):                           # takes one raw log line, returns extracted fields
+    try:                                        # try block — attempt the code inside
+        parts = line.strip().split()            # strip whitespace, split by spaces
+        timestamp = parts[0]                    # index 0 = '[08:01:23]'
+        test_name = parts[1]                    # index 1 = 'RRC_Setup'
+        rsrp = float(parts[2].split("=")[1])    # extract rsrp number from 'RSRP=-85.0'
+        sinr = float(parts[3].split("=")[1])    # extract sinr number from 'SINR=12.5'
+        status = parts[4].split("=")[1]         # extract status text from 'STATUS=PASS'
+        duration = int(parts[5].split("=")[1])  # extract duration integer from 'DURATION=45'
+        return timestamp, test_name, rsrp, sinr, status, duration   # return all 6 fields
+    except:                                     # if anything goes wrong (bad line format)
+        return None                             # return None — caller will skip this line
+
+
+def evaluate_kpi(rsrp, sinr):                   # check both KPIs against thresholds
+    rsrp_ok = rsrp >= -90                       # True if rsrp is acceptable
+    sinr_ok = sinr >= 10.0                      # True if sinr is acceptable
+    if rsrp_ok and sinr_ok:                     # both must pass for overall PASS
+        return "PASS"
+    else:
+        return "FAIL"
+
+
+def print_report(results):                      # takes the full results dictionary, prints report
+    print("\n" + "=" * 60)
+    print("           TM500 SESSION TEST REPORT")
+    print("=" * 60)
+    print(f"{'Test':<18} {'Time':<12} {'RSRP':>7} {'SINR':>7} {'KPI':>6} {'Log':>6} {'ms':>6}")
+    print("-" * 60)                             # separator line
+
+    for name, data in results.items():          # loop through all stored results
+        print(f"{name:<18} {data['timestamp']:<12} "
+              f"{data['rsrp']:>7} {data['sinr']:>7} "
+              f"{data['kpi_verdict']:>6} {data['log_status']:>6} "
+              f"{data['duration_ms']:>5}ms")    # print each row aligned
+
+
+def save_report(results, filename):             # takes results dict + output filename
+    with open(filename, "w") as f:              # open file in write mode
+        f.write("TM500 SESSION TEST REPORT\n")
+        f.write("=" * 50 + "\n")
+
+        pass_count = 0                          # counter for passes
+        fail_count = 0                          # counter for fails
+        rsrp_list = []                          # collect rsrp values for stats
+        sinr_list = []                          # collect sinr values for stats
+
+        for name, data in results.items():      # loop all results
+            f.write(f"{name}: RSRP={data['rsrp']} SINR={data['sinr']} "
+                    f"KPI={data['kpi_verdict']} LOG={data['log_status']} "
+                    f"{data['duration_ms']}ms\n")   # write each result line
+
+            rsrp_list.append(data['rsrp'])      # collect for stats
+            sinr_list.append(data['sinr'])
+
+            if data['kpi_verdict'] == "PASS":   # count by KPI verdict
+                pass_count += 1
+            else:
+                fail_count += 1
+
+        total = pass_count + fail_count         # total test count
+        pass_rate = (pass_count / total) * 100  # pass percentage
+
+        f.write("\n" + "=" * 50 + "\n")
+        f.write("SUMMARY\n")
+        f.write(f"Total Tests  : {total}\n")
+        f.write(f"KPI Pass     : {pass_count}\n")
+        f.write(f"KPI Fail     : {fail_count}\n")
+        f.write(f"Pass Rate    : {pass_rate:.1f}%\n")
+        f.write(f"Best RSRP    : {max(rsrp_list)} dBm\n")   # max = strongest signal
+        f.write(f"Worst RSRP   : {min(rsrp_list)} dBm\n")   # min = weakest signal
+        f.write(f"Avg RSRP     : {sum(rsrp_list)/len(rsrp_list):.1f} dBm\n")
+        f.write(f"Best SINR    : {max(sinr_list)} dB\n")
+        f.write(f"Worst SINR   : {min(sinr_list)} dB\n")
+        f.write(f"Avg SINR     : {sum(sinr_list)/len(sinr_list):.1f} dB\n")
+
+    print(f"\nReport saved: {filename}")        # confirm on screen
+
+
+# --- STEP 3: MAIN SCRIPT — reads log, builds results, calls functions ---
+
+results = {}                                    # empty dictionary to store all results
+
+with open("tm500_session.log", "r") as f:       # open log file in read mode
+    for line in f:                              # one line at a time
+        if line.strip() == "":                  # skip empty lines
+            continue                            # continue = skip to next iteration
+
+        parsed = parse_line(line)               # call parse function — get 6 values back
+        if parsed is None:                      # if parse failed (bad line)
+            continue                            # skip this line
+
+        timestamp, test_name, rsrp, sinr, status, duration = parsed   # unpack all 6 values
+
+        kpi = evaluate_kpi(rsrp, sinr)          # call evaluate function — get PASS or FAIL
+
+        results[test_name] = {                  # store in nested dictionary
+            "timestamp": timestamp,             # when the test ran
+            "rsrp": rsrp,                       # signal strength
+            "sinr": sinr,                       # signal quality
+            "log_status": status,               # status from the log file
+            "kpi_verdict": kpi,                 # our own KPI evaluation
+            "duration_ms": duration             # how long test took
+        }
+
+# --- STEP 4: OUTPUT ---
+
+print_report(results)                           # print formatted table to screen
+save_report(results, "session_report.txt")      # save full report to file
+
+Expected screen output:
+Log file created: tm500_session.log
+
+============================================================
+           TM500 SESSION TEST REPORT
+============================================================
+Test               Time         RSRP    SINR    KPI   Log     ms
+------------------------------------------------------------
+RRC_Setup          [08:01:23]  -85.0    12.5   PASS  PASS    45ms
+Handover           [08:02:11] -103.5     4.2   FAIL  FAIL   120ms
+NAS_Attach         [08:03:05]  -78.2    18.1   PASS  PASS    33ms
+PDCP_Reorder       [08:04:44]  -91.0     8.7   FAIL  FAIL    88ms
+RRC_Reconfig       [08:05:30]  -88.5    11.3   PASS  PASS    52ms
+Handover           [08:06:15]  -95.0     6.8   FAIL  FAIL   110ms
+NAS_Detach         [08:07:02]  -82.0    14.2   PASS  PASS    29ms
+
+Report saved: session_report.txt
