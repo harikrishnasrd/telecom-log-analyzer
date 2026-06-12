@@ -43,3 +43,54 @@ print("\n=== FAILED TESTS ===")
 for test_name, data in results.items():         # loop through all
     if data["status"] == "FAIL":                # check status in inner dict
         print(f"{test_name}: {data['rsrp']} dBm -- took {data['duration_ms']}ms")
+
+----------------------------------------------------------------
+EXPECTED OUTPUT
+----------------------------------------------------------------
+
+=== TEST RESULTS DATABASE ===
+Test                    RSRP   Status    Duration
+--------------------------------------------------
+RRC_Setup              -85.0   PASS           45ms
+Handover              -103.5   FAIL          120ms
+NAS_Attach             -78.2   PASS           33ms
+PDCP_Reorder           -91.0   FAIL           88ms
+RRC_Reconfig           -88.5   PASS           52ms
+
+Handover detail: RSRP=-103.5 | FAIL | 120ms
+
+=== FAILED TESTS ===
+Handover: -103.5 dBm -- took 120ms
+PDCP_Reorder: -91.0 dBm -- took 88ms
+
+----------------------------------------------------------------
+KEY THINGS TO REMEMBER
+----------------------------------------------------------------
+
+1. {} = empty dictionary | {"key": value} = dictionary with data
+2. dict[key] = value     → add or update a key
+3. "key" in dict         → check if key exists (True/False)
+4. dict["key"]           → crashes if key missing (KeyError)
+5. dict.get("key")       → returns None if missing — safe
+6. dict.get("key", "N/A")→ returns "N/A" if missing — custom default
+7. Nested dict           → dict inside dict — access with two keys
+8. :<20 in f-string      → left-align, pad to 20 chars wide
+9. :>8 in f-string       → right-align, pad to 8 chars wide
+10. int() converts text to whole number — use for duration, counts
+
+----------------------------------------------------------------
+DAYS 1-6 PIPELINE SUMMARY
+----------------------------------------------------------------
+
+Day 1 → Variables, lists, if/else, loops
+Day 2 → Open and read files, keyword search
+Day 3 → Extract values with split() and float()
+Day 4 → Write results to a report file
+Day 5 → Functions — reusable logic blocks
+Day 6 → Dictionaries — store multi-field test records
+
+Next → Day 7: Mini project — combine Days 1-6 into one
+              complete log parser that reads, extracts,
+              stores in dictionary, and saves a report
+
+===================================================
