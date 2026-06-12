@@ -35,3 +35,22 @@ with open("test_report.txt", "w") as report:             # open a new file calle
     report.write(f"Average     : {sum(rsrp_values) / len(rsrp_values):.1f} dBm\n")   # sum all values divided by count = average
 
 print("Report saved as test_report.txt")                 # confirm to screen that file was created — the actual results are in the file
+
+
+----------------------------------------------------------------
+EXPECTED OUTPUT
+----------------------------------------------------------------
+
+RRC_Setup: -85.0 dBm -- PASS
+Handover: -103.5 dBm -- FAIL
+NAS_Attach: -78.2 dBm -- PASS
+PDCP_Reorder: -91.0 dBm -- FAIL
+RRC_Reconfig: -88.5 dBm -- PASS
+
+=== SUMMARY ===
+Total Tests : 5
+Failures    : 2
+Pass Rate   : 60.0%
+Best RSRP   : -78.2 dBm
+Worst RSRP  : -103.5 dBm
+Average     : -89.2 dBm
