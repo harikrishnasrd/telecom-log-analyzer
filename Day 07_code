@@ -129,6 +129,25 @@ with open("tm500_session.log", "r") as f:       # open log file in read mode
             "duration_ms": duration             # how long test took
         }
 
+Expected Output:
+
+Log file created: tm500_session.log
+
+============================================================
+           TM500 SESSION TEST REPORT
+============================================================
+Test               Time         RSRP    SINR    KPI   Log     ms
+------------------------------------------------------------
+RRC_Setup          [08:01:23]  -85.0    12.5   PASS  PASS    45ms
+Handover           [08:02:11] -103.5     4.2   FAIL  FAIL   120ms
+NAS_Attach         [08:03:05]  -78.2    18.1   PASS  PASS    33ms
+PDCP_Reorder       [08:04:44]  -91.0     8.7   FAIL  FAIL    88ms
+RRC_Reconfig       [08:05:30]  -88.5    11.3   PASS  PASS    52ms
+Handover           [08:06:15]  -95.0     6.8   FAIL  FAIL   110ms
+NAS_Detach         [08:07:02]  -82.0    14.2   PASS  PASS    29ms
+
+Report saved: session_report.txt
+
 # --- STEP 4: OUTPUT ---
 
 print_report(results)                           # print formatted table to screen
