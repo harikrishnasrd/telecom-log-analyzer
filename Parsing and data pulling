@@ -1,0 +1,69 @@
+SAMPLE
+
+log_data = """[08:01:23] RRC_Setup RSRP=-85.0 SINR=12.5 STATUS=PASS DURATION=45
+[08:02:11] Handover RSRP=-103.5 SINR=4.2 STATUS=FAIL DURATION=120
+[08:03:05] NAS_Attach RSRP=-78.2 SINR=18.1 STATUS=PASS DURATION=33
+[08:04:44] PDCP_Reorder RSRP=-91.0 SINR=8.7 STATUS=FAIL DURATION=88
+[08:05:30] RRC_Reconfig RSRP=-88.5 SINR=11.3 STATUS=PASS DURATION=52
+[08:06:15] Handover RSRP=-95.0 SINR=6.8 STATUS=FAIL DURATION=110
+[08:07:02] NAS_Detach RSRP=-82.0 SINR=14.2 STATUS=PASS DURATION=29
+"""
+
+
+with open( "datapulling_log.txt", "w") as f:
+    f.write(log_data)
+
+def parse_line(line):
+    try:
+        pieces = line.split()
+        timestamp = pieces[0]
+        test_name=pieces[1]
+        rsrp=float(pieces[2].split("=")[1])
+        sinr=float(pieces[3].split("=")[1])
+        status=pieces[4].split("=")[1]
+        duration=pieces[5].split("=")[1]
+        return timestamp, test_name, rsrp, sinr, status, duration
+    except:
+        return None
+        
+        
+def evaluate_kpi(rsrp,sinr):
+    rsrp_ok = rsrp>=-90
+    sinr_ok = sinr>=10
+    if rsrp_ok and sinr_ok :
+        return "PASS"
+    else:
+        return "FAIL"
+   
+def print_report(results):
+    print("\n"+"="*60)
+    print("\n             TM500 RESULTS LOG")
+    print("="*60)
+    
+    for name, data in results.items():
+        print(f"{name:<18} {data['timestamp']:<12}{data['rsrp']:<8} {data['sinr']:<8} {data['status']:>7} {data['kpi_verdict']:>7} {data['duration']:>5}")
+       # fi.write(f"{name}:RSRP= {data ['rsrp']} SINR={data['sinr']} KPI={data['kpi_verdict']} STATUS={data['status']}{data['duration']}\n")
+    
+results = {}
+with open("datapulling_log.txt","r") as fi:
+    for line in fi:
+        if line.strip() == "":
+            continue
+            
+        parsed = parse_line(line)
+        
+        timestamp, test_name, rsrp, sinr, status, duration = parsed
+        kpi = evaluate_kpi(rsrp,sinr)
+        
+        results [test_name]= {
+        "timestamp" : timestamp,
+        "rsrp": rsrp,
+        "sinr":sinr,
+        "status":status,
+        "kpi_verdict":kpi,
+        "duration":duration
+        }
+    print_report(results)
+    
+        
+        
